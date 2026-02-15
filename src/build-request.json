@@ -1,0 +1,110 @@
+{
+  "kind": "build_request",
+  "title": "Admin-managed site settings: upload logo stored in canister bytes, editable contact details, remove Caffeine branding",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-15",
+      "text": "Add backend support for persistent site settings that admins can update at runtime, including (a) a website logo stored inside the backend canister as raw bytes and (b) editable contact details used by the public landing page and dashboards.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-7"
+        ],
+        "quotes": [
+          "it be uploaded by the admin and stored inside the backend canister as bytes so it updates instantly without redeployment"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend exposes query API(s) to fetch current site settings (contact details + a logo descriptor) without requiring admin permissions.",
+        "Backend exposes admin-only update API(s) to update contact details.",
+        "Backend exposes admin-only API(s) to upload/replace the logo as bytes (with an associated content type), and a public query API to fetch the logo bytes/content type.",
+        "Unauthorized callers (non-admin) attempting to update settings or upload a logo receive an authorization error.",
+        "Site settings (including the latest logo) persist across canister upgrades; if introducing stable state shape changes requires migration, add/adjust backend/migration.mo accordingly under the conditional migration policy."
+      ]
+    },
+    {
+      "id": "REQ-16",
+      "text": "Add an Admin Dashboard “Settings” area that lets admins (1) upload/replace the website logo image and (2) edit all contact details, saving changes to the backend and reflecting updates across the public landing page and student dashboard without redeployment.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5",
+          "msg-7"
+        ],
+        "quotes": [
+          "create a access that from admin dashboard admin can change website logo, contact details",
+          "it be uploaded by the admin and stored inside the backend canister as bytes so it updates instantly without redeployment"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin Dashboard includes a clearly labeled Settings section/tab/page accessible only to admins.",
+        "Settings UI provides a logo file picker (image upload) and a save action that uploads the bytes to the backend.",
+        "Settings UI provides editable fields for the site’s contact details currently shown on the landing page (at minimum: location/address, email, phone, and hours), and saves them to the backend.",
+        "After a successful save, the frontend invalidates/refetches relevant React Query queries so updated logo/contact details appear on the landing page header/footer and other relevant UI without a redeploy.",
+        "Non-admin users cannot see or use the Settings UI."
+      ]
+    },
+    {
+      "id": "REQ-17",
+      "text": "Update the public landing page and shared header branding to use the dynamically managed backend logo and backend-managed contact details, with sensible fallbacks if no custom logo/settings have been configured yet.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-7"
+        ],
+        "quotes": [
+          "it be uploaded by the admin and stored inside the backend canister as bytes so it updates instantly without redeployment"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The landing page header logo and AppHeader logo no longer hardcode /assets/generated/jk-tuition-logo.dim_512x512.png as the only option; they render the current backend-provided logo when available.",
+        "The landing page Contact section values are populated from backend site settings (with a reasonable default display if not configured).",
+        "The implementation does not route image serving through a separate backend HTTP asset server; instead it fetches bytes via canister calls and renders the image on the frontend (e.g., via object URL or data URL).",
+        "Public users (not signed in) can still view the landing page, including the logo and contact details, via public query calls."
+      ]
+    },
+    {
+      "id": "REQ-18",
+      "text": "Remove all Caffeine branding from the UI, including the “Built with … caffeine.ai” footer link on the landing page.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-7"
+        ],
+        "quotes": [
+          "also remove caffeine branding"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The landing page footer no longer contains the caffeine.ai referral link or “Built with …” Caffeine branding text.",
+        "Search within the frontend for visible “Caffeine”/“caffeine.ai” branding and remove it from user-facing UI output (without changing core functionality)."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Only generate/modify backend/migration.mo if required to preserve existing state during upgrades (conditional migration policy).",
+    "Do not edit files under frontend/src/components/ui or any other paths listed as immutable in SYSTEM_CONTEXT.",
+    "User-facing text added/changed by this request must be in English."
+  ],
+  "nonGoals": [
+    "Do not add third-party authentication providers (only Internet Identity).",
+    "Do not introduce external storage/CDNs/databases for the logo or settings.",
+    "Do not implement real-time push/WebSocket updates; rely on React Query invalidation/refetch after mutations."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}

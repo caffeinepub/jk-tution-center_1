@@ -1,0 +1,22 @@
+{
+  "frontend/src/App.tsx": "Main application component with TanStack Router setup, route definitions, protected route logic, and profile setup modal integration without Caffeine branding.",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for all backend operations including student profiles, roles, courses, announcements, and site settings (logo and contact details) with proper cache invalidation.",
+  "frontend/src/pages/LandingPage.tsx": "Public landing page with hero section, features, courses, announcements, and contact information, displaying dynamic logo and contact details from backend with fallback to static assets.",
+  "frontend/src/pages/StudentDashboard.tsx": "Student dashboard displaying read-only profile summary with avatar, personal details, and tabbed interface for viewing courses and announcements.",
+  "frontend/src/pages/AdminDashboard.tsx": "Admin dashboard with four-tab management interface for courses, announcements, students, and site settings, including create/edit/delete functionality and diagnostics link.",
+  "frontend/src/pages/AdminDiagnostics.tsx": "Admin-only diagnostics page displaying authentication status, role information, permissions checklist including student profile management, and system information without requiring user profile data.",
+  "frontend/src/pages/AccessDenied.tsx": "Access denied page shown to unauthenticated or unauthorized users with sign-in option and return home button.",
+  "frontend/src/components/layout/AppHeader.tsx": "Sticky header component with dynamic logo from backend, user profile dropdown showing student name, role badge, and navigation for authenticated users.",
+  "frontend/src/components/profile/ProfileSetupModal.tsx": "Full student profile creation modal with all required fields (name, age, class, school, batch, tuition center, parent mobile, date of birth, profile photo) and optional student mobile number, with validation and scrollable form.",
+  "frontend/src/components/admin/CourseEditor.tsx": "Dialog form component for creating and editing courses with validation and error handling.",
+  "frontend/src/components/admin/AnnouncementEditor.tsx": "Dialog form component for creating and editing announcements with date picker and validation.",
+  "frontend/src/components/admin/CourseList.tsx": "List component displaying all courses with edit and delete actions for administrators.",
+  "frontend/src/components/admin/AnnouncementList.tsx": "List component displaying all announcements with edit and delete actions for administrators.",
+  "frontend/src/index.css": "Global styles with OKLCH-based emerald/teal education theme supporting light and dark modes.",
+  "frontend/tailwind.config.js": "Tailwind configuration with custom color tokens, Inter font family, and extended theme utilities.",
+  "frontend/README.md": "Comprehensive documentation covering setup, admin bootstrap, authentication flow, project structure, and development guidelines.",
+  "frontend/src/components/admin/StudentList.tsx": "Admin-only component displaying all student profiles in a table with avatar, key details, and edit action buttons.",
+  "frontend/src/components/admin/StudentEditor.tsx": "Admin dialog form for editing existing student profiles with all fields, validation, and proper error handling.",
+  "frontend/src/hooks/useLogoObjectUrl.ts": "Helper hook that converts logo bytes (Uint8Array) into a browser-renderable object URL with automatic cleanup to prevent memory leaks, with proper type handling for Blob constructor.",
+  "frontend/src/components/admin/SiteSettingsPanel.tsx": "Admin-only settings panel for uploading site logo and editing contact details (email, phone, address) with validation and success/error feedback."
+}

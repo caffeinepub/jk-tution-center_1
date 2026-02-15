@@ -1,0 +1,87 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Admin-managed site settings UI: logo/contact settings + dynamic branding + remove Caffeine footer",
+  "requirements": [
+    {
+      "id": "REQ-16",
+      "summary": "Add an admin-only Settings area in the Admin Dashboard to upload/replace the site logo and edit contact details, persisting changes via backend calls and invalidating relevant React Query caches.",
+      "acceptanceCriteria": [
+        "Admin Dashboard includes a clearly labeled Settings section/tab/page accessible only to admins.",
+        "Settings UI provides a logo file picker (image upload) and a save action that uploads the bytes to the backend.",
+        "Settings UI provides editable fields for the site’s contact details currently shown on the landing page (at minimum: location/address, email, phone, and hours), and saves them to the backend.",
+        "After a successful save, the frontend invalidates/refetches relevant React Query queries so updated logo/contact details appear on the landing page header/footer and other relevant UI without a redeploy.",
+        "Non-admin users cannot see or use the Settings UI."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add React Query hooks/mutations for site settings: fetch contact details (and hours if provided by backend updates), fetch current logo bytes/content-type descriptor (as supported by the backend), and admin mutations to update contact details and upload/replace the logo. Ensure mutations invalidate/refetch the logo/contact queries and any dependent queries. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/admin/SiteSettingsPanel.tsx",
+          "operation": "create",
+          "description": "Create an Admin Dashboard Settings panel UI that (1) allows selecting an image file, converts it to bytes, and triggers the logo upload mutation, and (2) provides controlled form fields for contact details (address/location, email, phone, and hours) prefilled from current settings and saved via mutation. Include basic validation and clear success/error messaging (English). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/AdminDashboard.tsx",
+          "operation": "modify",
+          "description": "Wire the new Settings area into the Admin Dashboard by adding a clearly labeled \"Settings\" tab/section and rendering SiteSettingsPanel. Keep it under the existing admin-protected route so non-admins cannot access it. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/backend.d.ts",
+          "operation": "modify",
+          "description": "Update the frontend backend type definitions to match the backend’s new/updated site settings capabilities required by this feature (e.g., logo descriptor/content type, contact details including hours) so the Settings UI can call the backend functions with correct typing. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-17",
+      "summary": "Render landing page and shared header branding using backend-managed logo bytes and contact details, with sensible fallbacks and public access.",
+      "acceptanceCriteria": [
+        "The landing page header logo and AppHeader logo no longer hardcode /assets/generated/jk-tuition-logo.dim_512x512.png as the only option; they render the current backend-provided logo when available.",
+        "The landing page Contact section values are populated from backend site settings (with a reasonable default display if not configured).",
+        "The implementation does not route image serving through a separate backend HTTP asset server; instead it fetches bytes via canister calls and renders the image on the frontend (e.g., via object URL or data URL).",
+        "Public users (not signed in) can still view the landing page, including the logo and contact details, via public query calls."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useLogoObjectUrl.ts",
+          "operation": "create",
+          "description": "Add a small helper hook/util that converts backend-fetched logo bytes (and content type when available) into a browser-renderable URL (object URL or data URL), and revokes object URLs on cleanup to avoid memory leaks. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/layout/AppHeader.tsx",
+          "operation": "modify",
+          "description": "Replace the hardcoded logo with the dynamic logo from site settings (using the new React Query hook(s) + useLogoObjectUrl), falling back to frontend/public/assets/generated/jk-tuition-logo.dim_512x512.png when no custom logo is configured or the fetch fails. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/LandingPage.tsx",
+          "operation": "modify",
+          "description": "Update landing page header and footer branding to use the dynamic backend-provided logo (via object/data URL) with fallback to frontend/public/assets/generated/jk-tuition-logo.dim_512x512.png. Update the Contact section to read contact details from site settings hooks (email, phone, address/location, hours) with reasonable defaults if not configured. Ensure the landing page remains publicly viewable (anonymous actor) and uses public query calls only for reads. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-18",
+      "summary": "Remove all Caffeine branding from user-facing UI, including the landing page footer referral link.",
+      "acceptanceCriteria": [
+        "The landing page footer no longer contains the caffeine.ai referral link or “Built with …” Caffeine branding text.",
+        "Search within the frontend for visible “Caffeine”/“caffeine.ai” branding and remove it from user-facing UI output (without changing core functionality)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/LandingPage.tsx",
+          "operation": "modify",
+          "description": "Remove the “Built with … caffeine.ai” footer text/link and any other Caffeine-branded footer content while keeping the rest of the footer layout intact. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Perform a quick audit pass for any remaining user-visible “Caffeine”/“caffeine.ai” branding in shared UI (headers/footers/navigation) referenced from the app shell; remove or adjust as needed without changing core functionality. Verify the component's usage instructions before implementing."
+        }
+      ]
+    }
+  ]
+}

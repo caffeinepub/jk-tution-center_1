@@ -1,0 +1,66 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-add-an-admin-dashboard-settings-area-that-lets-admins-1-upload-replace-the-website-logo-image-and-2-edit-all-contact-details-saving-changes-to-the-backend-and-reflecting-updates-across-the-public-landing-page-and-student-dashboard-without-redeployment",
+      "featureTitle": "Add an Admin Dashboard “Settings” area that lets admins (1) upload/replace the website logo image and (2) edit all contact details, saving changes to the backend and reflecting updates across the public landing page and student dashboard without redeployment.",
+      "files": [
+        "frontend/src/components/admin/SiteSettingsPanel.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/AdminDashboard.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-16"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-public-landing-page-and-shared-header-branding-to-use-the-dynamically-managed-backend-logo-and-backend-managed-contact-details-with-sensible-fallbacks-if-no-custom-logo-settings-have-been-configured-yet",
+      "featureTitle": "Update the public landing page and shared header branding to use the dynamically managed backend logo and backend-managed contact details, with sensible fallbacks if no custom logo/settings have been configured yet.",
+      "files": [
+        "frontend/src/components/layout/AppHeader.tsx",
+        "frontend/src/hooks/useLogoObjectUrl.ts",
+        "frontend/src/pages/LandingPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-17"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-remove-all-caffeine-branding-from-the-ui-including-the-built-with-caffeine-ai-footer-link-on-the-landing-page",
+      "featureTitle": "Remove all Caffeine branding from the UI, including the “Built with … caffeine.ai” footer link on the landing page.",
+      "files": [
+        "frontend/src/pages/LandingPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-18"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

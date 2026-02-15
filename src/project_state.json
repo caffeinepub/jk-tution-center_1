@@ -1,0 +1,187 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 7,
+  "summary": "Build a website for JK Tution Center with a public site plus student and admin dashboards, including student self-service profile creation and an admin-managed student profiles panel, and add admin-managed site settings (logo + contact details) with removal of Caffeine branding.",
+  "architectural_notes": [
+    "Student Profile entity fields: name, age, class, school, batch (1 or 2), tuition center, parent mobile number, date of birth, profile photo are required; student mobile number is optional.",
+    "Permissions: students can create their own profile and view it read-only; admins cannot create profiles but can edit existing student profiles.",
+    "Admin Dashboard includes a dedicated 'Students' panel listing all student profiles (regardless of who created them).",
+    "Admin-managed website logo must be uploaded via Admin Dashboard and stored in the backend canister as bytes so it updates instantly without redeployment; public site and student dashboard should read the latest logo from the backend.",
+    "Admin can edit all contact details (e.g., phone, email, address, WhatsApp, hours) via Admin Dashboard; updates should propagate to public site and student dashboard.",
+    "Remove all Caffeine branding from the UI."
+  ],
+  "known_issues": [
+    "Existing direction to use only frontend static image assets conflicts with the new requirement to store the logo in the backend canister for instant updates."
+  ],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-create-a-public-facing-jk-tuition-center-website-with-a-landing-page-that-clearly-presents-the-tuition-center-name-an-overview-section-course-program-highlights-contact-details-and-a-prominent-sign-in-button",
+      "title": "Create a public-facing JK Tuition Center website with a landing page that clearly presents the tuition center name, an overview section, course/program highlights, contact details, and a prominent sign-in button.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-authentication-using-internet-identity-and-establish-role-based-access-control-with-at-least-two-roles-admin-and-student-user",
+      "title": "Implement authentication using Internet Identity and establish role-based access control with at least two roles: Admin and Student (User).",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-student-user-dashboard-that-displays-the-signed-in-user-profile-summary-and-provides-read-only-access-to-tuition-center-information-managed-by-admins-e-g-announcements-and-available-courses",
+      "title": "Build a Student (User) Dashboard that displays the signed-in user profile summary and provides read-only access to tuition center information managed by admins (e.g., announcements and available courses).",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-an-admin-dashboard-that-allows-admins-to-create-update-and-delete-site-content-that-appears-on-the-public-site-and-student-dashboard-at-minimum-announcements-and-courses",
+      "title": "Build an Admin Dashboard that allows Admins to create, update, and delete site content that appears on the public site and Student Dashboard (at minimum: announcements and courses).",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-provide-initial-admin-bootstrap-allow-the-canister-to-be-initialized-with-at-least-one-admin-principal-configurable-and-include-an-admin-only-ui-section-to-view-the-current-user-role-and-optionally-list-known-users-roles-for-troubleshooting",
+      "title": "Provide initial admin bootstrap: allow the canister to be initialized with at least one Admin principal (configurable), and include an admin-only UI section to view the current user role and (optionally) list known users/roles for troubleshooting.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-coherent-modern-visual-theme-for-an-education-tuition-brand-colors-typography-spacing-components-and-use-it-consistently-across-landing-page-student-dashboard-and-admin-dashboard",
+      "title": "Apply a coherent, modern visual theme for an education/tuition brand (colors, typography, spacing, components) and use it consistently across landing page, Student Dashboard, and Admin Dashboard.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-generated-static-image-assets-for-branding-and-use-them-in-the-ui-via-frontend-static-files-do-not-serve-images-from-the-backend",
+      "title": "Add generated static image assets for branding and use them in the UI via frontend static files (do not serve images from the backend).",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-current-name-only-profilesetupmodal-based-flow-with-a-student-profile-creation-form-that-collects-all-required-student-profile-fields-and-optional-student-mobile-number-and-allows-uploading-selecting-a-profile-photo-ensure-the-form-is-shown-only-when-the-signed-in-student-has-not-created-a-profile-yet",
+      "title": "Replace the current name-only ProfileSetupModal-based flow with a student profile creation form that collects all required student profile fields (and optional student mobile number) and allows uploading/selecting a profile photo; ensure the form is shown only when the signed-in student has not created a profile yet.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-new-students-section-in-the-admin-dashboard-that-lists-all-student-profiles-and-allows-the-admin-to-open-an-edit-view-modal-to-update-an-existing-student-profile-but-does-not-provide-any-ui-for-creating-new-student-profiles",
+      "title": "Add a new \"Students\" section in the Admin Dashboard that lists all student profiles and allows the admin to open an edit view/modal to update an existing student profile (but does not provide any UI for creating new student profiles).",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-the-react-query-layer-to-support-the-new-student-profile-apis-create-by-student-admin-list-all-admin-edit-and-ensure-relevant-queries-invalidate-refetch-after-mutations",
+      "title": "Extend the React Query layer to support the new student profile APIs (create-by-student, admin list all, admin edit) and ensure relevant queries invalidate/refetch after mutations.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-admin-dashboard-settings-area-that-lets-admins-1-upload-replace-the-website-logo-image-and-2-edit-all-contact-details-saving-changes-to-the-backend-and-reflecting-updates-across-the-public-landing-page-and-student-dashboard-without-redeployment",
+      "title": "Add an Admin Dashboard “Settings” area that lets admins (1) upload/replace the website logo image and (2) edit all contact details, saving changes to the backend and reflecting updates across the public landing page and student dashboard without redeployment.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-public-landing-page-and-shared-header-branding-to-use-the-dynamically-managed-backend-logo-and-backend-managed-contact-details-with-sensible-fallbacks-if-no-custom-logo-settings-have-been-configured-yet",
+      "title": "Update the public landing page and shared header branding to use the dynamically managed backend logo and backend-managed contact details, with sensible fallbacks if no custom logo/settings have been configured yet.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-all-caffeine-branding-from-the-ui-including-the-built-with-caffeine-ai-footer-link-on-the-landing-page",
+      "title": "Remove all Caffeine branding from the UI, including the “Built with … caffeine.ai” footer link on the landing page.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Create JK Tution Center website with user (student) dashboard and admin dashboard",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Student profile system: students can create their own profile (required fields incl. photo; student phone optional), students can view but not edit; admin dashboard lists all profiles and admins can edit profiles",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Update the backend user profile model to a full Student Profile with the following fields: name, age, class, school, batch (must be either \"Batch 1\" or \"Batch 2\"), tuition center, parent mobile number, date of birth, profile photo; also include student mobile number as an optional field.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Enforce student-profile permissions in the backend: only a signed-in Student (User role) can create their own student profile; Admins cannot create student profiles; Students can view their own profile but cannot edit it after creation; Admins can view all student profiles and can edit existing student profiles.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Add backend API endpoints needed for the Admin Dashboard \"Students\" panel to show all profiles and edit a selected profile, including returning each profile along with its associated principal identifier.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "If changing the persisted shape of stored profiles requires an upgrade migration, add a conditional migration that preserves existing stored profile data (at least the existing name field) into the new Student Profile format.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Add an Admin Dashboard settings area to update the website logo (admin uploads; store in backend canister as bytes for instant updates without redeploy) and edit all contact details; changes should automatically reflect on the public site and student dashboard; remove Caffeine branding from the UI.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Add backend support for persistent site settings that admins can update at runtime, including (a) a website logo stored inside the backend canister as raw bytes and (b) editable contact details used by the public landing page and dashboards.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "JK Tution Center",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
