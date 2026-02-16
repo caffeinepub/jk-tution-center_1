@@ -19,12 +19,13 @@ export const StudentProfile = IDL.Record({
   'dateOfBirth' : IDL.Text,
   'school' : IDL.Text,
   'name' : IDL.Text,
-  'profilePhoto' : IDL.Text,
+  'profilePhoto' : IDL.Vec(IDL.Nat8),
   'studentMobileNumber' : IDL.Opt(IDL.Text),
   'parentMobileNumber' : IDL.Text,
   'batch' : IDL.Text,
   'className' : IDL.Text,
 });
+export const Time = IDL.Int;
 export const Announcement = IDL.Record({
   'id' : IDL.Nat,
   'title' : IDL.Text,
@@ -37,14 +38,73 @@ export const Course = IDL.Record({
   'instructor' : IDL.Text,
   'description' : IDL.Text,
   'schedule' : IDL.Text,
+  'monthlyFee' : IDL.Nat,
+});
+export const AttendanceStatus = IDL.Variant({
+  'present' : IDL.Null,
+  'absent' : IDL.Null,
+});
+export const AttendanceEntry = IDL.Record({
+  'status' : AttendanceStatus,
+  'date' : Time,
+});
+export const AttendanceDay = IDL.Record({
+  'day' : IDL.Nat,
+  'status' : AttendanceStatus,
+  'month' : IDL.Nat,
+  'year' : IDL.Nat,
+});
+export const EnrollmentStatus = IDL.Variant({
+  'expired' : IDL.Null,
+  'pending' : IDL.Null,
+  'approved' : IDL.Null,
+  'rejected' : IDL.Null,
+});
+export const EnrollmentRequest = IDL.Record({
+  'status' : EnrollmentStatus,
+  'expiryDate' : IDL.Opt(Time),
+  'approvalDate' : IDL.Opt(Time),
+  'student' : IDL.Principal,
+  'renewalRequest' : IDL.Bool,
+  'requestDate' : Time,
+  'courseId' : IDL.Nat,
+});
+export const TestResult = IDL.Record({
+  'id' : IDL.Nat,
+  'date' : Time,
+  'pass' : IDL.Bool,
+  'feedback' : IDL.Text,
+  'score' : IDL.Nat,
+  'grade' : IDL.Text,
+  'student' : IDL.Principal,
+  'courseId' : IDL.Nat,
+});
+export const DailyResult = IDL.Record({
+  'date' : Time,
+  'score' : IDL.Nat,
+  'student' : IDL.Principal,
+  'resultType' : IDL.Text,
+  'courseId' : IDL.Nat,
+  'remarks' : IDL.Text,
 });
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'approveEnrollment' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
+  'approveRenewal' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'createAnnouncement' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
-  'createCourse' : IDL.Func([IDL.Text, IDL.Text, IDL.Text, IDL.Text], [], []),
+  'createCourse' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Nat],
+      [],
+      [],
+    ),
   'createStudentProfile' : IDL.Func([StudentProfile], [], []),
+  'createTestResult' : IDL.Func(
+      [IDL.Principal, IDL.Nat, IDL.Nat, IDL.Text, IDL.Bool, IDL.Text, Time],
+      [],
+      [],
+    ),
   'deleteAnnouncement' : IDL.Func([IDL.Nat], [], []),
   'deleteCourse' : IDL.Func([IDL.Nat], [], []),
   'getAllAnnouncements' : IDL.Func([], [IDL.Vec(Announcement)], ['query']),
@@ -54,6 +114,17 @@ export const idlService = IDL.Service({
       [IDL.Vec(IDL.Tuple(IDL.Principal, StudentProfile))],
       ['query'],
     ),
+  'getAttendanceByDateRange' : IDL.Func(
+      [IDL.Principal, Time, Time],
+      [IDL.Vec(AttendanceEntry)],
+      ['query'],
+    ),
+  'getAttendanceForMonth' : IDL.Func(
+      [IDL.Principal, IDL.Nat, IDL.Nat],
+      [IDL.Vec(AttendanceDay)],
+      ['query'],
+    ),
+  'getCallerAttendance' : IDL.Func([], [IDL.Vec(AttendanceEntry)], ['query']),
   'getCallerRole' : IDL.Func([], [IDL.Text], ['query']),
   'getCallerStudentProfile' : IDL.Func(
       [],
@@ -62,7 +133,65 @@ export const idlService = IDL.Service({
     ),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getContactDetails' : IDL.Func([], [IDL.Text, IDL.Text, IDL.Text], ['query']),
+  'getCourse' : IDL.Func([IDL.Nat], [IDL.Opt(Course)], ['query']),
+  'getCoursesWithEnrollmentStatus' : IDL.Func(
+      [],
+      [
+        IDL.Record({
+          'courses' : IDL.Vec(Course),
+          'expiredEnrollments' : IDL.Vec(IDL.Nat),
+          'activeEnrollments' : IDL.Vec(IDL.Nat),
+          'enrollmentRequests' : IDL.Vec(IDL.Nat),
+        }),
+      ],
+      ['query'],
+    ),
+  'getEnrollmentsByCourse' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Vec(EnrollmentRequest)],
+      ['query'],
+    ),
+  'getEnrollmentsByUser' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(EnrollmentRequest)],
+      ['query'],
+    ),
   'getLogo' : IDL.Func([], [IDL.Vec(IDL.Nat8)], ['query']),
+  'getResultsByCourse' : IDL.Func(
+      [IDL.Nat],
+      [
+        IDL.Record({
+          'testResults' : IDL.Vec(TestResult),
+          'dailyResults' : IDL.Vec(DailyResult),
+        }),
+      ],
+      ['query'],
+    ),
+  'getResultsByDate' : IDL.Func(
+      [Time],
+      [
+        IDL.Record({
+          'testResults' : IDL.Vec(TestResult),
+          'dailyResults' : IDL.Vec(DailyResult),
+        }),
+      ],
+      ['query'],
+    ),
+  'getResultsByStudent' : IDL.Func(
+      [IDL.Principal],
+      [
+        IDL.Record({
+          'testResults' : IDL.Vec(TestResult),
+          'dailyResults' : IDL.Vec(DailyResult),
+        }),
+      ],
+      ['query'],
+    ),
+  'getStudentAttendance' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(AttendanceEntry)],
+      ['query'],
+    ),
   'getStudentProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(StudentProfile)],
@@ -70,6 +199,16 @@ export const idlService = IDL.Service({
     ),
   'getUserRole' : IDL.Func([IDL.Principal], [IDL.Text], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'markAttendance' : IDL.Func([IDL.Principal, Time, AttendanceStatus], [], []),
+  'postDailyResult' : IDL.Func(
+      [IDL.Principal, IDL.Nat, Time, IDL.Text, IDL.Nat, IDL.Text],
+      [],
+      [],
+    ),
+  'rejectEnrollment' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
+  'renewEnrollment' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
+  'requestEnrollment' : IDL.Func([IDL.Nat], [], []),
+  'requestRenewal' : IDL.Func([IDL.Nat], [], []),
   'updateAnnouncement' : IDL.Func(
       [IDL.Nat, IDL.Text, IDL.Text, IDL.Text],
       [],
@@ -77,12 +216,31 @@ export const idlService = IDL.Service({
     ),
   'updateContactDetails' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
   'updateCourse' : IDL.Func(
-      [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Nat],
+      [],
+      [],
+    ),
+  'updateDailyResult' : IDL.Func(
+      [IDL.Principal, IDL.Nat, Time, IDL.Text, IDL.Nat, IDL.Text],
       [],
       [],
     ),
   'updateLogo' : IDL.Func([IDL.Vec(IDL.Nat8)], [], []),
   'updateStudentProfile' : IDL.Func([IDL.Principal, StudentProfile], [], []),
+  'updateTestResult' : IDL.Func(
+      [
+        IDL.Nat,
+        IDL.Principal,
+        IDL.Nat,
+        IDL.Nat,
+        IDL.Text,
+        IDL.Bool,
+        IDL.Text,
+        Time,
+      ],
+      [],
+      [],
+    ),
 });
 
 export const idlInitArgs = [];
@@ -99,12 +257,13 @@ export const idlFactory = ({ IDL }) => {
     'dateOfBirth' : IDL.Text,
     'school' : IDL.Text,
     'name' : IDL.Text,
-    'profilePhoto' : IDL.Text,
+    'profilePhoto' : IDL.Vec(IDL.Nat8),
     'studentMobileNumber' : IDL.Opt(IDL.Text),
     'parentMobileNumber' : IDL.Text,
     'batch' : IDL.Text,
     'className' : IDL.Text,
   });
+  const Time = IDL.Int;
   const Announcement = IDL.Record({
     'id' : IDL.Nat,
     'title' : IDL.Text,
@@ -117,14 +276,73 @@ export const idlFactory = ({ IDL }) => {
     'instructor' : IDL.Text,
     'description' : IDL.Text,
     'schedule' : IDL.Text,
+    'monthlyFee' : IDL.Nat,
+  });
+  const AttendanceStatus = IDL.Variant({
+    'present' : IDL.Null,
+    'absent' : IDL.Null,
+  });
+  const AttendanceEntry = IDL.Record({
+    'status' : AttendanceStatus,
+    'date' : Time,
+  });
+  const AttendanceDay = IDL.Record({
+    'day' : IDL.Nat,
+    'status' : AttendanceStatus,
+    'month' : IDL.Nat,
+    'year' : IDL.Nat,
+  });
+  const EnrollmentStatus = IDL.Variant({
+    'expired' : IDL.Null,
+    'pending' : IDL.Null,
+    'approved' : IDL.Null,
+    'rejected' : IDL.Null,
+  });
+  const EnrollmentRequest = IDL.Record({
+    'status' : EnrollmentStatus,
+    'expiryDate' : IDL.Opt(Time),
+    'approvalDate' : IDL.Opt(Time),
+    'student' : IDL.Principal,
+    'renewalRequest' : IDL.Bool,
+    'requestDate' : Time,
+    'courseId' : IDL.Nat,
+  });
+  const TestResult = IDL.Record({
+    'id' : IDL.Nat,
+    'date' : Time,
+    'pass' : IDL.Bool,
+    'feedback' : IDL.Text,
+    'score' : IDL.Nat,
+    'grade' : IDL.Text,
+    'student' : IDL.Principal,
+    'courseId' : IDL.Nat,
+  });
+  const DailyResult = IDL.Record({
+    'date' : Time,
+    'score' : IDL.Nat,
+    'student' : IDL.Principal,
+    'resultType' : IDL.Text,
+    'courseId' : IDL.Nat,
+    'remarks' : IDL.Text,
   });
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'approveEnrollment' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
+    'approveRenewal' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'createAnnouncement' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
-    'createCourse' : IDL.Func([IDL.Text, IDL.Text, IDL.Text, IDL.Text], [], []),
+    'createCourse' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Nat],
+        [],
+        [],
+      ),
     'createStudentProfile' : IDL.Func([StudentProfile], [], []),
+    'createTestResult' : IDL.Func(
+        [IDL.Principal, IDL.Nat, IDL.Nat, IDL.Text, IDL.Bool, IDL.Text, Time],
+        [],
+        [],
+      ),
     'deleteAnnouncement' : IDL.Func([IDL.Nat], [], []),
     'deleteCourse' : IDL.Func([IDL.Nat], [], []),
     'getAllAnnouncements' : IDL.Func([], [IDL.Vec(Announcement)], ['query']),
@@ -134,6 +352,17 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(IDL.Tuple(IDL.Principal, StudentProfile))],
         ['query'],
       ),
+    'getAttendanceByDateRange' : IDL.Func(
+        [IDL.Principal, Time, Time],
+        [IDL.Vec(AttendanceEntry)],
+        ['query'],
+      ),
+    'getAttendanceForMonth' : IDL.Func(
+        [IDL.Principal, IDL.Nat, IDL.Nat],
+        [IDL.Vec(AttendanceDay)],
+        ['query'],
+      ),
+    'getCallerAttendance' : IDL.Func([], [IDL.Vec(AttendanceEntry)], ['query']),
     'getCallerRole' : IDL.Func([], [IDL.Text], ['query']),
     'getCallerStudentProfile' : IDL.Func(
         [],
@@ -146,7 +375,65 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text, IDL.Text, IDL.Text],
         ['query'],
       ),
+    'getCourse' : IDL.Func([IDL.Nat], [IDL.Opt(Course)], ['query']),
+    'getCoursesWithEnrollmentStatus' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'courses' : IDL.Vec(Course),
+            'expiredEnrollments' : IDL.Vec(IDL.Nat),
+            'activeEnrollments' : IDL.Vec(IDL.Nat),
+            'enrollmentRequests' : IDL.Vec(IDL.Nat),
+          }),
+        ],
+        ['query'],
+      ),
+    'getEnrollmentsByCourse' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Vec(EnrollmentRequest)],
+        ['query'],
+      ),
+    'getEnrollmentsByUser' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(EnrollmentRequest)],
+        ['query'],
+      ),
     'getLogo' : IDL.Func([], [IDL.Vec(IDL.Nat8)], ['query']),
+    'getResultsByCourse' : IDL.Func(
+        [IDL.Nat],
+        [
+          IDL.Record({
+            'testResults' : IDL.Vec(TestResult),
+            'dailyResults' : IDL.Vec(DailyResult),
+          }),
+        ],
+        ['query'],
+      ),
+    'getResultsByDate' : IDL.Func(
+        [Time],
+        [
+          IDL.Record({
+            'testResults' : IDL.Vec(TestResult),
+            'dailyResults' : IDL.Vec(DailyResult),
+          }),
+        ],
+        ['query'],
+      ),
+    'getResultsByStudent' : IDL.Func(
+        [IDL.Principal],
+        [
+          IDL.Record({
+            'testResults' : IDL.Vec(TestResult),
+            'dailyResults' : IDL.Vec(DailyResult),
+          }),
+        ],
+        ['query'],
+      ),
+    'getStudentAttendance' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(AttendanceEntry)],
+        ['query'],
+      ),
     'getStudentProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(StudentProfile)],
@@ -154,6 +441,20 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getUserRole' : IDL.Func([IDL.Principal], [IDL.Text], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'markAttendance' : IDL.Func(
+        [IDL.Principal, Time, AttendanceStatus],
+        [],
+        [],
+      ),
+    'postDailyResult' : IDL.Func(
+        [IDL.Principal, IDL.Nat, Time, IDL.Text, IDL.Nat, IDL.Text],
+        [],
+        [],
+      ),
+    'rejectEnrollment' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
+    'renewEnrollment' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
+    'requestEnrollment' : IDL.Func([IDL.Nat], [], []),
+    'requestRenewal' : IDL.Func([IDL.Nat], [], []),
     'updateAnnouncement' : IDL.Func(
         [IDL.Nat, IDL.Text, IDL.Text, IDL.Text],
         [],
@@ -161,12 +462,31 @@ export const idlFactory = ({ IDL }) => {
       ),
     'updateContactDetails' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
     'updateCourse' : IDL.Func(
-        [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Nat],
+        [],
+        [],
+      ),
+    'updateDailyResult' : IDL.Func(
+        [IDL.Principal, IDL.Nat, Time, IDL.Text, IDL.Nat, IDL.Text],
         [],
         [],
       ),
     'updateLogo' : IDL.Func([IDL.Vec(IDL.Nat8)], [], []),
     'updateStudentProfile' : IDL.Func([IDL.Principal, StudentProfile], [], []),
+    'updateTestResult' : IDL.Func(
+        [
+          IDL.Nat,
+          IDL.Principal,
+          IDL.Nat,
+          IDL.Nat,
+          IDL.Text,
+          IDL.Bool,
+          IDL.Text,
+          Time,
+        ],
+        [],
+        [],
+      ),
   });
 };
 

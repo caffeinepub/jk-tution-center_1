@@ -109,7 +109,7 @@ export default function SiteSettingsPanel() {
   return (
     <div className="space-y-6">
       {/* Logo Upload Section */}
-      <Card>
+      <Card className="bg-card border-border rounded-lg shadow-md">
         <CardHeader>
           <CardTitle>Website Logo</CardTitle>
           <CardDescription>
@@ -120,7 +120,7 @@ export default function SiteSettingsPanel() {
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-4">
               <Label htmlFor="logo-upload" className="cursor-pointer">
-                <div className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-accent transition-colors">
+                <div className="flex items-center gap-2 px-4 py-2 border border-border rounded-md hover:bg-accent transition-colors">
                   <Upload className="h-4 w-4" />
                   <span>Choose Logo</span>
                 </div>
@@ -139,7 +139,7 @@ export default function SiteSettingsPanel() {
 
             {logoPreview && (
               <div className="flex items-center gap-4">
-                <div className="border rounded-md p-4 bg-muted">
+                <div className="border border-border rounded-md p-4 bg-muted">
                   <img src={logoPreview} alt="Logo preview" className="h-24 w-24 object-contain" />
                 </div>
                 <Button
@@ -165,7 +165,7 @@ export default function SiteSettingsPanel() {
       </Card>
 
       {/* Contact Details Section */}
-      <Card>
+      <Card className="bg-card border-border rounded-lg shadow-md">
         <CardHeader>
           <CardTitle>Contact Details</CardTitle>
           <CardDescription>
@@ -209,7 +209,6 @@ export default function SiteSettingsPanel() {
           <Button
             onClick={handleContactSave}
             disabled={updateContactMutation.isPending}
-            className="w-full sm:w-auto"
           >
             {updateContactMutation.isPending ? (
               <>

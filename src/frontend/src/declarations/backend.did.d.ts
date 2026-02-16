@@ -16,58 +16,163 @@ export interface Announcement {
   'date' : string,
   'message' : string,
 }
+export interface AttendanceDay {
+  'day' : bigint,
+  'status' : AttendanceStatus,
+  'month' : bigint,
+  'year' : bigint,
+}
+export interface AttendanceEntry { 'status' : AttendanceStatus, 'date' : Time }
+export type AttendanceStatus = { 'present' : null } |
+  { 'absent' : null };
 export interface Course {
   'id' : bigint,
   'title' : string,
   'instructor' : string,
   'description' : string,
   'schedule' : string,
+  'monthlyFee' : bigint,
 }
+export interface DailyResult {
+  'date' : Time,
+  'score' : bigint,
+  'student' : Principal,
+  'resultType' : string,
+  'courseId' : bigint,
+  'remarks' : string,
+}
+export interface EnrollmentRequest {
+  'status' : EnrollmentStatus,
+  'expiryDate' : [] | [Time],
+  'approvalDate' : [] | [Time],
+  'student' : Principal,
+  'renewalRequest' : boolean,
+  'requestDate' : Time,
+  'courseId' : bigint,
+}
+export type EnrollmentStatus = { 'expired' : null } |
+  { 'pending' : null } |
+  { 'approved' : null } |
+  { 'rejected' : null };
 export interface StudentProfile {
   'age' : bigint,
   'tuitionCenter' : string,
   'dateOfBirth' : string,
   'school' : string,
   'name' : string,
-  'profilePhoto' : string,
+  'profilePhoto' : Uint8Array,
   'studentMobileNumber' : [] | [string],
   'parentMobileNumber' : string,
   'batch' : string,
   'className' : string,
 }
+export interface TestResult {
+  'id' : bigint,
+  'date' : Time,
+  'pass' : boolean,
+  'feedback' : string,
+  'score' : bigint,
+  'grade' : string,
+  'student' : Principal,
+  'courseId' : bigint,
+}
+export type Time = bigint;
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'approveEnrollment' : ActorMethod<[Principal, bigint], undefined>,
+  'approveRenewal' : ActorMethod<[Principal, bigint], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'createAnnouncement' : ActorMethod<[string, string, string], undefined>,
-  'createCourse' : ActorMethod<[string, string, string, string], undefined>,
+  'createCourse' : ActorMethod<
+    [string, string, string, string, bigint],
+    undefined
+  >,
   'createStudentProfile' : ActorMethod<[StudentProfile], undefined>,
+  'createTestResult' : ActorMethod<
+    [Principal, bigint, bigint, string, boolean, string, Time],
+    undefined
+  >,
   'deleteAnnouncement' : ActorMethod<[bigint], undefined>,
   'deleteCourse' : ActorMethod<[bigint], undefined>,
   'getAllAnnouncements' : ActorMethod<[], Array<Announcement>>,
   'getAllCourses' : ActorMethod<[], Array<Course>>,
   'getAllStudentProfiles' : ActorMethod<[], Array<[Principal, StudentProfile]>>,
+  'getAttendanceByDateRange' : ActorMethod<
+    [Principal, Time, Time],
+    Array<AttendanceEntry>
+  >,
+  'getAttendanceForMonth' : ActorMethod<
+    [Principal, bigint, bigint],
+    Array<AttendanceDay>
+  >,
+  'getCallerAttendance' : ActorMethod<[], Array<AttendanceEntry>>,
   'getCallerRole' : ActorMethod<[], string>,
   'getCallerStudentProfile' : ActorMethod<[], [] | [StudentProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getContactDetails' : ActorMethod<[], [string, string, string]>,
+  'getCourse' : ActorMethod<[bigint], [] | [Course]>,
+  'getCoursesWithEnrollmentStatus' : ActorMethod<
+    [],
+    {
+      'courses' : Array<Course>,
+      'expiredEnrollments' : Array<bigint>,
+      'activeEnrollments' : Array<bigint>,
+      'enrollmentRequests' : Array<bigint>,
+    }
+  >,
+  'getEnrollmentsByCourse' : ActorMethod<[bigint], Array<EnrollmentRequest>>,
+  'getEnrollmentsByUser' : ActorMethod<[Principal], Array<EnrollmentRequest>>,
   'getLogo' : ActorMethod<[], Uint8Array>,
+  'getResultsByCourse' : ActorMethod<
+    [bigint],
+    { 'testResults' : Array<TestResult>, 'dailyResults' : Array<DailyResult> }
+  >,
+  'getResultsByDate' : ActorMethod<
+    [Time],
+    { 'testResults' : Array<TestResult>, 'dailyResults' : Array<DailyResult> }
+  >,
+  'getResultsByStudent' : ActorMethod<
+    [Principal],
+    { 'testResults' : Array<TestResult>, 'dailyResults' : Array<DailyResult> }
+  >,
+  'getStudentAttendance' : ActorMethod<[Principal], Array<AttendanceEntry>>,
   'getStudentProfile' : ActorMethod<[Principal], [] | [StudentProfile]>,
   'getUserRole' : ActorMethod<[Principal], string>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'markAttendance' : ActorMethod<
+    [Principal, Time, AttendanceStatus],
+    undefined
+  >,
+  'postDailyResult' : ActorMethod<
+    [Principal, bigint, Time, string, bigint, string],
+    undefined
+  >,
+  'rejectEnrollment' : ActorMethod<[Principal, bigint], undefined>,
+  'renewEnrollment' : ActorMethod<[Principal, bigint], undefined>,
+  'requestEnrollment' : ActorMethod<[bigint], undefined>,
+  'requestRenewal' : ActorMethod<[bigint], undefined>,
   'updateAnnouncement' : ActorMethod<
     [bigint, string, string, string],
     undefined
   >,
   'updateContactDetails' : ActorMethod<[string, string, string], undefined>,
   'updateCourse' : ActorMethod<
-    [bigint, string, string, string, string],
+    [bigint, string, string, string, string, bigint],
+    undefined
+  >,
+  'updateDailyResult' : ActorMethod<
+    [Principal, bigint, Time, string, bigint, string],
     undefined
   >,
   'updateLogo' : ActorMethod<[Uint8Array], undefined>,
   'updateStudentProfile' : ActorMethod<[Principal, StudentProfile], undefined>,
+  'updateTestResult' : ActorMethod<
+    [bigint, Principal, bigint, bigint, string, boolean, string, Time],
+    undefined
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

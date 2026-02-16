@@ -14,7 +14,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
+import { Upload } from 'lucide-react';
 import type { StudentProfile } from '../../backend';
+import { fileToUint8Array } from '../../utils/fileToUint8Array';
 
 export default function ProfileSetupModal() {
   const [formData, setFormData] = useState({
@@ -26,11 +28,34 @@ export default function ProfileSetupModal() {
     tuitionCenter: '',
     parentMobileNumber: '',
     dateOfBirth: '',
-    profilePhoto: '',
     studentMobileNumber: '',
   });
+  const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string>('');
 
   const createProfile = useCreateStudentProfile();
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+      setProfilePhotoFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,12 +93,14 @@ export default function ProfileSetupModal() {
       toast.error('Please enter your date of birth');
       return;
     }
-    if (!formData.profilePhoto.trim()) {
-      toast.error('Please provide a profile photo URL');
+    if (!profilePhotoFile) {
+      toast.error('Please upload a profile photo');
       return;
     }
 
     try {
+      const photoBytes = await fileToUint8Array(profilePhotoFile);
+      
       const profile: StudentProfile = {
         name: formData.name.trim(),
         age: BigInt(parseInt(formData.age)),
@@ -83,7 +110,7 @@ export default function ProfileSetupModal() {
         tuitionCenter: formData.tuitionCenter.trim(),
         parentMobileNumber: formData.parentMobileNumber.trim(),
         dateOfBirth: formData.dateOfBirth.trim(),
-        profilePhoto: formData.profilePhoto.trim(),
+        profilePhoto: photoBytes,
         studentMobileNumber: formData.studentMobileNumber.trim() || undefined,
       };
 
@@ -246,25 +273,46 @@ export default function ProfileSetupModal() {
 
               <div className="space-y-2">
                 <Label htmlFor="profilePhoto">
-                  Profile Photo URL <span className="text-destructive">*</span>
+                  Profile Photo <span className="text-destructive">*</span>
                 </Label>
-                <Input
-                  id="profilePhoto"
-                  type="url"
-                  placeholder="Enter profile photo URL"
-                  value={formData.profilePhoto}
-                  onChange={(e) => setFormData({ ...formData, profilePhoto: e.target.value })}
-                  disabled={createProfile.isPending}
-                />
+                <div className="flex items-center gap-4">
+                  <Input
+                    id="profilePhoto"
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    disabled={createProfile.isPending}
+                    className="cursor-pointer"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById('profilePhoto')?.click()}
+                    disabled={createProfile.isPending}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Choose
+                  </Button>
+                </div>
+                {photoPreview && (
+                  <div className="mt-2">
+                    <img
+                      src={photoPreview}
+                      alt="Profile preview"
+                      className="w-24 h-24 rounded-full object-cover border-2 border-border"
+                    />
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground">
-                  Provide a URL to your profile photo
+                  Upload an image file (max 5MB)
                 </p>
               </div>
             </div>
           </ScrollArea>
 
           <DialogFooter className="mt-4">
-            <Button type="submit" disabled={createProfile.isPending}>
+            <Button type="submit" disabled={createProfile.isPending} className="w-full sm:w-auto">
               {createProfile.isPending ? 'Creating Profile...' : 'Create Profile'}
             </Button>
           </DialogFooter>

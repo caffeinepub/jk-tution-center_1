@@ -14,8 +14,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
+import { Upload } from 'lucide-react';
 import type { Principal } from '@icp-sdk/core/principal';
 import type { StudentProfile } from '../../backend';
+import { fileToUint8Array } from '../../utils/fileToUint8Array';
+import { useByteImageObjectUrl } from '../../hooks/useByteImageObjectUrl';
 
 interface StudentEditorProps {
   studentId: Principal;
@@ -33,9 +36,11 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
     tuitionCenter: '',
     parentMobileNumber: '',
     dateOfBirth: '',
-    profilePhoto: '',
     studentMobileNumber: '',
   });
+  const [newPhotoFile, setNewPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string>('');
+  const existingPhotoUrl = useByteImageObjectUrl(profile.profilePhoto);
 
   const updateProfile = useUpdateStudentProfile();
 
@@ -49,10 +54,31 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
       tuitionCenter: profile.tuitionCenter,
       parentMobileNumber: profile.parentMobileNumber,
       dateOfBirth: profile.dateOfBirth,
-      profilePhoto: profile.profilePhoto,
       studentMobileNumber: profile.studentMobileNumber || '',
     });
   }, [profile]);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+      setNewPhotoFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,12 +116,14 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
       toast.error('Please enter date of birth');
       return;
     }
-    if (!formData.profilePhoto.trim()) {
-      toast.error('Please provide profile photo URL');
-      return;
-    }
 
     try {
+      // Use new photo if uploaded, otherwise keep existing
+      let photoBytes = profile.profilePhoto;
+      if (newPhotoFile) {
+        photoBytes = await fileToUint8Array(newPhotoFile);
+      }
+
       const updatedProfile: StudentProfile = {
         name: formData.name.trim(),
         age: BigInt(parseInt(formData.age)),
@@ -105,7 +133,7 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
         tuitionCenter: formData.tuitionCenter.trim(),
         parentMobileNumber: formData.parentMobileNumber.trim(),
         dateOfBirth: formData.dateOfBirth.trim(),
-        profilePhoto: formData.profilePhoto.trim(),
+        profilePhoto: photoBytes,
         studentMobileNumber: formData.studentMobileNumber.trim() || undefined,
       };
 
@@ -118,6 +146,8 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
       console.error('Profile update error:', error);
     }
   };
+
+  const displayPhoto = photoPreview || existingPhotoUrl;
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -134,11 +164,12 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-name">
+                  <Label htmlFor="name">
                     Full Name <span className="text-destructive">*</span>
                   </Label>
                   <Input
-                    id="edit-name"
+                    id="name"
+                    placeholder="Enter full name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     disabled={updateProfile.isPending}
@@ -146,13 +177,14 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-age">
+                  <Label htmlFor="age">
                     Age <span className="text-destructive">*</span>
                   </Label>
                   <Input
-                    id="edit-age"
+                    id="age"
                     type="number"
                     min="1"
+                    placeholder="Enter age"
                     value={formData.age}
                     onChange={(e) => setFormData({ ...formData, age: e.target.value })}
                     disabled={updateProfile.isPending}
@@ -162,11 +194,12 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-className">
+                  <Label htmlFor="className">
                     Class <span className="text-destructive">*</span>
                   </Label>
                   <Input
-                    id="edit-className"
+                    id="className"
+                    placeholder="e.g., Grade 10"
                     value={formData.className}
                     onChange={(e) => setFormData({ ...formData, className: e.target.value })}
                     disabled={updateProfile.isPending}
@@ -174,11 +207,12 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-school">
+                  <Label htmlFor="school">
                     School <span className="text-destructive">*</span>
                   </Label>
                   <Input
-                    id="edit-school"
+                    id="school"
+                    placeholder="Enter school name"
                     value={formData.school}
                     onChange={(e) => setFormData({ ...formData, school: e.target.value })}
                     disabled={updateProfile.isPending}
@@ -188,7 +222,7 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-batch">
+                  <Label htmlFor="batch">
                     Batch <span className="text-destructive">*</span>
                   </Label>
                   <Select
@@ -196,8 +230,8 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
                     onValueChange={(value) => setFormData({ ...formData, batch: value })}
                     disabled={updateProfile.isPending}
                   >
-                    <SelectTrigger id="edit-batch">
-                      <SelectValue />
+                    <SelectTrigger id="batch">
+                      <SelectValue placeholder="Select batch" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Batch 1">Batch 1</SelectItem>
@@ -207,11 +241,12 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-tuitionCenter">
+                  <Label htmlFor="tuitionCenter">
                     Tuition Center <span className="text-destructive">*</span>
                   </Label>
                   <Input
-                    id="edit-tuitionCenter"
+                    id="tuitionCenter"
+                    placeholder="Enter tuition center"
                     value={formData.tuitionCenter}
                     onChange={(e) => setFormData({ ...formData, tuitionCenter: e.target.value })}
                     disabled={updateProfile.isPending}
@@ -220,11 +255,11 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-dateOfBirth">
+                <Label htmlFor="dateOfBirth">
                   Date of Birth <span className="text-destructive">*</span>
                 </Label>
                 <Input
-                  id="edit-dateOfBirth"
+                  id="dateOfBirth"
                   type="date"
                   value={formData.dateOfBirth}
                   onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
@@ -234,12 +269,13 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-parentMobileNumber">
+                  <Label htmlFor="parentMobileNumber">
                     Parent Mobile Number <span className="text-destructive">*</span>
                   </Label>
                   <Input
-                    id="edit-parentMobileNumber"
+                    id="parentMobileNumber"
                     type="tel"
+                    placeholder="Enter parent's mobile"
                     value={formData.parentMobileNumber}
                     onChange={(e) => setFormData({ ...formData, parentMobileNumber: e.target.value })}
                     disabled={updateProfile.isPending}
@@ -247,12 +283,13 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-studentMobileNumber">
+                  <Label htmlFor="studentMobileNumber">
                     Student Mobile Number (Optional)
                   </Label>
                   <Input
-                    id="edit-studentMobileNumber"
+                    id="studentMobileNumber"
                     type="tel"
+                    placeholder="Enter student's mobile"
                     value={formData.studentMobileNumber}
                     onChange={(e) => setFormData({ ...formData, studentMobileNumber: e.target.value })}
                     disabled={updateProfile.isPending}
@@ -261,16 +298,41 @@ export default function StudentEditor({ studentId, profile, onClose }: StudentEd
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-profilePhoto">
-                  Profile Photo URL <span className="text-destructive">*</span>
+                <Label htmlFor="profilePhoto">
+                  Profile Photo
                 </Label>
-                <Input
-                  id="edit-profilePhoto"
-                  type="url"
-                  value={formData.profilePhoto}
-                  onChange={(e) => setFormData({ ...formData, profilePhoto: e.target.value })}
-                  disabled={updateProfile.isPending}
-                />
+                <div className="flex items-center gap-4">
+                  <Input
+                    id="profilePhoto"
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    disabled={updateProfile.isPending}
+                    className="cursor-pointer"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById('profilePhoto')?.click()}
+                    disabled={updateProfile.isPending}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Change
+                  </Button>
+                </div>
+                {displayPhoto && (
+                  <div className="mt-2">
+                    <img
+                      src={displayPhoto}
+                      alt="Profile preview"
+                      className="w-24 h-24 rounded-full object-cover border-2 border-border"
+                    />
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Upload a new image to replace the current photo (max 5MB)
+                </p>
               </div>
             </div>
           </ScrollArea>

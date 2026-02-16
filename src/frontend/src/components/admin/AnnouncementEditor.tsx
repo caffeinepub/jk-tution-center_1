@@ -85,7 +85,7 @@ export default function AnnouncementEditor({ announcement, onClose }: Announceme
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
               <Input
                 id="title"
@@ -95,7 +95,7 @@ export default function AnnouncementEditor({ announcement, onClose }: Announceme
                 disabled={isLoading}
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="date">Date</Label>
               <Input
                 id="date"
@@ -105,7 +105,7 @@ export default function AnnouncementEditor({ announcement, onClose }: Announceme
                 disabled={isLoading}
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="message">Message</Label>
               <Textarea
                 id="message"

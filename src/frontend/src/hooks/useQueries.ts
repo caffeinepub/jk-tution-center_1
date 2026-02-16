@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { Course, Announcement, StudentProfile } from '../backend';
+import type { Course, Announcement, StudentProfile, AttendanceDay, AttendanceEntry, AttendanceStatus, Time, EnrollmentRequest, TestResult, DailyResult } from '../backend';
 import { Principal } from '@icp-sdk/core/principal';
 
 // Student Profile Queries
@@ -35,6 +35,7 @@ export function useCreateStudentProfile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['callerStudentProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['allStudentProfiles'] });
     },
   });
 }
@@ -130,12 +131,13 @@ export function useCreateCourse() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { title: string; description: string; instructor: string; schedule: string }) => {
+    mutationFn: async (data: { title: string; description: string; instructor: string; schedule: string; monthlyFee: bigint }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.createCourse(data.title, data.description, data.instructor, data.schedule);
+      return actor.createCourse(data.title, data.description, data.instructor, data.schedule, data.monthlyFee);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['coursesWithEnrollmentStatus'] });
     },
   });
 }
@@ -145,12 +147,13 @@ export function useUpdateCourse() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { id: bigint; title: string; description: string; instructor: string; schedule: string }) => {
+    mutationFn: async (data: { id: bigint; title: string; description: string; instructor: string; schedule: string; monthlyFee: bigint }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.updateCourse(data.id, data.title, data.description, data.instructor, data.schedule);
+      return actor.updateCourse(data.id, data.title, data.description, data.instructor, data.schedule, data.monthlyFee);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['coursesWithEnrollmentStatus'] });
     },
   });
 }
@@ -166,6 +169,7 @@ export function useDeleteCourse() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['coursesWithEnrollmentStatus'] });
     },
   });
 }
@@ -273,6 +277,301 @@ export function useUpdateContactDetails() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contactDetails'] });
+    },
+  });
+}
+
+// Attendance Queries and Mutations
+export function useMarkAttendance() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { studentId: Principal; date: Time; status: AttendanceStatus }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.markAttendance(data.studentId, data.date, data.status);
+    },
+    onSuccess: (_, variables) => {
+      // Invalidate attendance queries for the affected student
+      queryClient.invalidateQueries({ 
+        queryKey: ['studentAttendance', variables.studentId.toString()] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['attendanceForMonth', variables.studentId.toString()] 
+      });
+    },
+  });
+}
+
+export function useGetAttendanceForMonth(studentId: Principal | null, year: number, month: number) {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<AttendanceDay[]>({
+    queryKey: ['attendanceForMonth', studentId?.toString(), year, month],
+    queryFn: async () => {
+      if (!actor || !studentId) return [];
+      return actor.getAttendanceForMonth(studentId, BigInt(year), BigInt(month));
+    },
+    enabled: !!actor && !actorFetching && !!studentId,
+  });
+}
+
+export function useGetCallerAttendance() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<AttendanceEntry[]>({
+    queryKey: ['callerAttendance'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getCallerAttendance();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function useGetStudentAttendance(studentId: Principal | null) {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<AttendanceEntry[]>({
+    queryKey: ['studentAttendance', studentId?.toString()],
+    queryFn: async () => {
+      if (!actor || !studentId) return [];
+      return actor.getStudentAttendance(studentId);
+    },
+    enabled: !!actor && !actorFetching && !!studentId,
+  });
+}
+
+// Enrollment Queries and Mutations
+export function useGetCoursesWithEnrollmentStatus() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<{
+    courses: Course[];
+    activeEnrollments: bigint[];
+    expiredEnrollments: bigint[];
+    enrollmentRequests: bigint[];
+  }>({
+    queryKey: ['coursesWithEnrollmentStatus'],
+    queryFn: async () => {
+      if (!actor) return { courses: [], activeEnrollments: [], expiredEnrollments: [], enrollmentRequests: [] };
+      return actor.getCoursesWithEnrollmentStatus();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function useRequestEnrollment() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (courseId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.requestEnrollment(courseId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coursesWithEnrollmentStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollmentsByUser'] });
+    },
+  });
+}
+
+export function useRequestRenewal() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (courseId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.requestRenewal(courseId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coursesWithEnrollmentStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollmentsByUser'] });
+    },
+  });
+}
+
+export function useGetEnrollmentsByUser(student: Principal | null) {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<EnrollmentRequest[]>({
+    queryKey: ['enrollmentsByUser', student?.toString()],
+    queryFn: async () => {
+      if (!actor || !student) return [];
+      return actor.getEnrollmentsByUser(student);
+    },
+    enabled: !!actor && !actorFetching && !!student,
+  });
+}
+
+export function useGetEnrollmentsByCourse(courseId: bigint | null) {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<EnrollmentRequest[]>({
+    queryKey: ['enrollmentsByCourse', courseId?.toString()],
+    queryFn: async () => {
+      if (!actor || courseId === null) return [];
+      return actor.getEnrollmentsByCourse(courseId);
+    },
+    enabled: !!actor && !actorFetching && courseId !== null,
+  });
+}
+
+export function useApproveEnrollment() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { student: Principal; courseId: bigint }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.approveEnrollment(data.student, data.courseId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['enrollmentsByUser'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollmentsByCourse'] });
+      queryClient.invalidateQueries({ queryKey: ['coursesWithEnrollmentStatus'] });
+    },
+  });
+}
+
+export function useRejectEnrollment() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { student: Principal; courseId: bigint }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.rejectEnrollment(data.student, data.courseId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['enrollmentsByUser'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollmentsByCourse'] });
+      queryClient.invalidateQueries({ queryKey: ['coursesWithEnrollmentStatus'] });
+    },
+  });
+}
+
+export function useApproveRenewal() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { student: Principal; courseId: bigint }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.approveRenewal(data.student, data.courseId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['enrollmentsByUser'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollmentsByCourse'] });
+      queryClient.invalidateQueries({ queryKey: ['coursesWithEnrollmentStatus'] });
+    },
+  });
+}
+
+export function useRenewEnrollment() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { student: Principal; courseId: bigint }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.renewEnrollment(data.student, data.courseId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['enrollmentsByUser'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollmentsByCourse'] });
+      queryClient.invalidateQueries({ queryKey: ['coursesWithEnrollmentStatus'] });
+    },
+  });
+}
+
+// Results Queries and Mutations
+export function useGetResultsByStudent(student: Principal | null) {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<{ testResults: TestResult[]; dailyResults: DailyResult[] }>({
+    queryKey: ['resultsByStudent', student?.toString()],
+    queryFn: async () => {
+      if (!actor || !student) return { testResults: [], dailyResults: [] };
+      return actor.getResultsByStudent(student);
+    },
+    enabled: !!actor && !actorFetching && !!student,
+  });
+}
+
+export function useGetResultsByCourse(courseId: bigint | null) {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<{ testResults: TestResult[]; dailyResults: DailyResult[] }>({
+    queryKey: ['resultsByCourse', courseId?.toString()],
+    queryFn: async () => {
+      if (!actor || courseId === null) return { testResults: [], dailyResults: [] };
+      return actor.getResultsByCourse(courseId);
+    },
+    enabled: !!actor && !actorFetching && courseId !== null,
+  });
+}
+
+export function useCreateTestResult() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      student: Principal;
+      courseId: bigint;
+      score: bigint;
+      grade: string;
+      pass: boolean;
+      feedback: string;
+      date: Time;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.createTestResult(
+        data.student,
+        data.courseId,
+        data.score,
+        data.grade,
+        data.pass,
+        data.feedback,
+        data.date
+      );
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['resultsByStudent', variables.student.toString()] });
+      queryClient.invalidateQueries({ queryKey: ['resultsByCourse', variables.courseId.toString()] });
+    },
+  });
+}
+
+export function usePostDailyResult() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      student: Principal;
+      courseId: bigint;
+      date: Time;
+      resultType: string;
+      score: bigint;
+      remarks: string;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.postDailyResult(
+        data.student,
+        data.courseId,
+        data.date,
+        data.resultType,
+        data.score,
+        data.remarks
+      );
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['resultsByStudent', variables.student.toString()] });
+      queryClient.invalidateQueries({ queryKey: ['resultsByCourse', variables.courseId.toString()] });
     },
   });
 }

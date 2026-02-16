@@ -1,111 +1,28 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T17:47:24.926Z",
-  "summary": "Diff adds a new backend migration and introduces frontend UI/hooks for site settings (logo + contact details) and uses a dynamic logo on LandingPage/AppHeader. However, several acceptance criteria are not evidenced in the diff summary: logo content-type handling, “hours” contact field, confirmed public/admin backend APIs and authorization behavior, and confirmed removal of Caffeine branding. Diff also appears to add an Admin Diagnostics page, which was not requested by REQ-15..18.",
-  "missing_requirements": [
-    {
-      "id": "REQ-15",
-      "requirement": "Backend exposes public query API(s) to fetch current site settings (contact details + a logo descriptor) without requiring admin permissions, plus a public query API to fetch the logo bytes/content type.",
-      "reason": "backend/main.mo diff excerpt shows new SiteSettings type and default values but does not show any public query methods for settings/logo or any logo descriptor (and no content-type stored).",
-      "evidence": [
-        "backend/main.mo",
-        "backend/migration.mo"
-      ]
-    },
-    {
-      "id": "REQ-15",
-      "requirement": "Backend exposes admin-only update API(s) to update contact details and upload/replace the logo as bytes with an associated content type; unauthorized non-admin callers receive an authorization error.",
-      "reason": "backend/main.mo excerpt shows authorization checks for courses/announcements but the diff summary does not show any settings/logo update methods or authorization behavior for those endpoints; also SiteSettings contains logo bytes but no contentType field.",
-      "evidence": [
-        "backend/main.mo",
-        "backend/migration.mo"
-      ]
-    },
-    {
-      "id": "REQ-15",
-      "requirement": "Logo stored with an associated content type (and query returns bytes/content type).",
-      "reason": "SiteSettings type in both backend/main.mo and backend/migration.mo includes `var logo : [Nat8]` but no `contentType`/mime-type field; frontend object URL hook hardcodes `image/png`.",
-      "evidence": [
-        "backend/main.mo",
-        "backend/migration.mo",
-        "frontend/src/hooks/useLogoObjectUrl.ts"
-      ]
-    },
-    {
-      "id": "REQ-16",
-      "requirement": "Settings UI provides editable fields for contact details shown on the landing page (at minimum: location/address, email, phone, and hours).",
-      "reason": "SiteSettingsPanel and backend SiteSettings only include email/phone/address; no “hours” field is evidenced anywhere in the diff summary.",
-      "evidence": [
-        "frontend/src/components/admin/SiteSettingsPanel.tsx",
-        "backend/main.mo",
-        "backend/migration.mo",
-        "frontend/src/pages/LandingPage.tsx"
-      ]
-    },
-    {
-      "id": "REQ-16",
-      "requirement": "Non-admin users cannot see or use the Settings UI (admin-only access).",
-      "reason": "AdminDashboard adds a Settings tab, but the diff summary does not show any guard/role check that hides the Settings tab/panel for non-admins (nor route protection details for the admin area).",
-      "evidence": [
-        "frontend/src/pages/AdminDashboard.tsx"
-      ]
-    },
-    {
-      "id": "REQ-16",
-      "requirement": "Logo upload includes associated content type when saving to backend.",
-      "reason": "SiteSettingsPanel converts the file to Uint8Array and calls `useUpdateLogo().mutateAsync(uint8Array)`; no content type is passed, and the logo rendering hook assumes PNG.",
-      "evidence": [
-        "frontend/src/components/admin/SiteSettingsPanel.tsx",
-        "frontend/src/hooks/useLogoObjectUrl.ts"
-      ]
-    },
-    {
-      "id": "REQ-17",
-      "requirement": "Contact section values on the landing page are populated from backend site settings, including hours, with sensible defaults if not configured.",
-      "reason": "LandingPage shows defaults and pulls email/phone/address, but no hours field is present, so it cannot populate hours from settings.",
-      "evidence": [
-        "frontend/src/pages/LandingPage.tsx",
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-17",
-      "requirement": "Implementation fetches bytes via canister calls and renders image with correct type (not hardcoded).",
-      "reason": "Logo bytes are converted to a Blob with hardcoded `{ type: 'image/png' }`, which may be incorrect without backend-provided content type.",
-      "evidence": [
-        "frontend/src/hooks/useLogoObjectUrl.ts"
-      ]
-    },
-    {
-      "id": "REQ-18",
-      "requirement": "Remove all Caffeine branding from UI, including the “Built with … caffeine.ai” footer link on the landing page.",
-      "reason": "The diff summary does not include the landing page footer section where this link/text would exist (LandingPage is truncated) and provides no explicit removal evidence for “Built with …” / “caffeine.ai”.",
-      "evidence": [
-        "frontend/src/pages/LandingPage.tsx"
-      ]
-    }
-  ],
+  "generatedAt": "2026-02-16T17:57:44.836Z",
+  "summary": "REQ-1 (remove the Caffeine footer branding line on the Landing Page) cannot be conclusively verified from the provided truncated LandingPage.tsx excerpt because the footer section containing the targeted second paragraph (p[2]) is not shown. The diff also includes changes to project tracking metadata and repository summary text that are not requested by the BuildRequest.",
+  "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "Admin Diagnostics page/link added to Admin Dashboard.",
-      "reason": "REQ-15..18 do not request an admin diagnostics page; diff summary shows a Diagnostics link and mentions an AdminDiagnostics page in file summaries.",
+      "description": "Project tracking/metadata updates adding new_feature_requests entries (AR-1/AR-2) unrelated to implementing the footer paragraph removal itself.",
+      "reason": "The BuildRequest only asks to remove a specific footer branding line on the Landing Page and explicitly constrains changes to the selected element; updating project_state.json is not requested.",
       "evidence": [
-        "frontend/src/pages/AdminDashboard.tsx",
+        "project_state.json"
+      ]
+    },
+    {
+      "description": "Repository-wide narrative summaries describing numerous unrelated frontend features/styling changes (dashboards, hooks, Tailwind/CSS, README, etc.).",
+      "reason": "The BuildRequest is narrowly scoped to deleting a single footer paragraph element; adding/updating broad feature summaries is not requested.",
+      "evidence": [
         "frontend-file-summaries.txt"
       ]
     }
   ],
-  "confidence": 0.66,
+  "confidence": 0.52,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/admin/SiteSettingsPanel.tsx",
-    "frontend/src/components/layout/AppHeader.tsx",
-    "frontend/src/hooks/useLogoObjectUrl.ts",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/AdminDashboard.tsx",
     "frontend/src/pages/LandingPage.tsx",
     "project_state.json"
   ]

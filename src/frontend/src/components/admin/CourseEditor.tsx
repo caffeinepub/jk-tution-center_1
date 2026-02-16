@@ -25,6 +25,7 @@ export default function CourseEditor({ course, onClose }: CourseEditorProps) {
   const [description, setDescription] = useState('');
   const [instructor, setInstructor] = useState('');
   const [schedule, setSchedule] = useState('');
+  const [monthlyFee, setMonthlyFee] = useState('');
 
   const createCourse = useCreateCourse();
   const updateCourse = useUpdateCourse();
@@ -35,6 +36,7 @@ export default function CourseEditor({ course, onClose }: CourseEditorProps) {
       setDescription(course.description);
       setInstructor(course.instructor);
       setSchedule(course.schedule);
+      setMonthlyFee(course.monthlyFee.toString());
     }
   }, [course]);
 
@@ -46,6 +48,12 @@ export default function CourseEditor({ course, onClose }: CourseEditorProps) {
       return;
     }
 
+    const feeValue = monthlyFee.trim() === '' ? 0 : parseInt(monthlyFee.trim(), 10);
+    if (isNaN(feeValue) || feeValue < 0) {
+      toast.error('Please enter a valid monthly fee (0 or positive number)');
+      return;
+    }
+
     try {
       if (course) {
         await updateCourse.mutateAsync({
@@ -54,6 +62,7 @@ export default function CourseEditor({ course, onClose }: CourseEditorProps) {
           description: description.trim(),
           instructor: instructor.trim(),
           schedule: schedule.trim(),
+          monthlyFee: BigInt(feeValue),
         });
         toast.success('Course updated successfully!');
       } else {
@@ -62,6 +71,7 @@ export default function CourseEditor({ course, onClose }: CourseEditorProps) {
           description: description.trim(),
           instructor: instructor.trim(),
           schedule: schedule.trim(),
+          monthlyFee: BigInt(feeValue),
         });
         toast.success('Course created successfully!');
       }
@@ -114,6 +124,19 @@ export default function CourseEditor({ course, onClose }: CourseEditorProps) {
                 onChange={(e) => setSchedule(e.target.value)}
                 disabled={isLoading}
               />
+            </div>
+            <div>
+              <Label htmlFor="monthlyFee">Monthly Fee</Label>
+              <Input
+                id="monthlyFee"
+                type="number"
+                min="0"
+                placeholder="e.g., 5000"
+                value={monthlyFee}
+                onChange={(e) => setMonthlyFee(e.target.value)}
+                disabled={isLoading}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Display only, no payment processing</p>
             </div>
             <div>
               <Label htmlFor="description">Description</Label>

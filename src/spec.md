@@ -1,13 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Let admins manage site-wide branding and contact information at runtime (including uploading a logo stored in-canister), have the public site reflect those settings dynamically, and remove all Caffeine branding.
+**Goal:** Remove the “Built with … using caffeine.ai” branding line from the landing page footer.
 
 **Planned changes:**
-- Add backend site settings state that persists across canister upgrades, including contact details and a stored logo (raw bytes + content type).
-- Expose public backend query APIs to fetch current contact details and the current logo bytes/content type; add admin-only update APIs for contact details and logo upload/replace with authorization checks.
-- Add an Admin Dashboard “Settings” area (admin-only) to upload/replace the logo and edit contact details, saving to the backend and refetching/invalidation so changes appear without redeploy.
-- Update the landing page and shared header to render the backend-managed logo and contact details with sensible fallbacks when not configured.
-- Remove all visible Caffeine/caffeine.ai branding from the frontend, including the landing page footer referral/link text.
+- Delete the second paragraph element in the landing page footer (XPath: /html[1]/body[1]/div[1]/div[1]/footer[1]/div[1]/div[1]/p[2]) that renders the Caffeine branding line, including its heart icon and outbound link.
+- Ensure no other footer or page content is modified.
 
-**User-visible outcome:** Admins can update the site logo and contact details from a Settings page and see those changes immediately across the public landing page and dashboards; users no longer see any Caffeine branding.
+**User-visible outcome:** The public landing page footer shows only the copyright line and no longer displays the “Built with … using caffeine.ai” line or any link to https://caffeine.ai/.

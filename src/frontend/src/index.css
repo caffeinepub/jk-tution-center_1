@@ -3,69 +3,154 @@
 @tailwind utilities;
 
 @layer base {
-    :root {
-        --radius: 0.625rem;
-        /* Light mode - Emerald/Teal education theme */
-        --background: 0.99 0 0;
-        --foreground: 0.15 0.02 160;
-        --card: 1 0 0;
-        --card-foreground: 0.15 0.02 160;
-        --popover: 1 0 0;
-        --popover-foreground: 0.15 0.02 160;
-        --primary: 0.55 0.15 165;
-        --primary-foreground: 0.99 0 0;
-        --secondary: 0.96 0.01 160;
-        --secondary-foreground: 0.15 0.02 160;
-        --muted: 0.96 0.01 160;
-        --muted-foreground: 0.50 0.02 160;
-        --accent: 0.92 0.02 165;
-        --accent-foreground: 0.15 0.02 160;
-        --destructive: 0.577 0.245 27.325;
-        --destructive-foreground: 0.99 0 0;
-        --border: 0.90 0.01 160;
-        --input: 0.90 0.01 160;
-        --ring: 0.55 0.15 165;
-        --chart-1: 0.55 0.15 165;
-        --chart-2: 0.65 0.12 200;
-        --chart-3: 0.70 0.18 140;
-        --chart-4: 0.60 0.20 180;
-        --chart-5: 0.50 0.16 150;
-    }
+  :root {
+    /* Professional Education Theme - Light Mode */
+    /* Store OKLCH values as raw triplets (L C H) without oklch() wrapper */
+    --background: 98% 0.005 220;
+    --foreground: 18% 0.01 220;
+    --card: 100% 0 0;
+    --card-foreground: 18% 0.01 220;
+    --popover: 100% 0 0;
+    --popover-foreground: 18% 0.01 220;
+    --primary: 48% 0.18 250;
+    --primary-foreground: 98% 0.005 250;
+    --secondary: 94% 0.02 220;
+    --secondary-foreground: 22% 0.01 220;
+    --muted: 96% 0.01 220;
+    --muted-foreground: 48% 0.02 220;
+    --accent: 92% 0.04 200;
+    --accent-foreground: 22% 0.01 200;
+    --destructive: 55% 0.20 25;
+    --destructive-foreground: 98% 0.01 25;
+    --border: 90% 0.01 220;
+    --input: 90% 0.01 220;
+    --ring: 48% 0.18 250;
+    --radius: 0.5rem;
+    --success: 55% 0.15 145;
+    --success-foreground: 98% 0.01 145;
+    --warning: 65% 0.15 85;
+    --warning-foreground: 18% 0.01 85;
+    
+    /* Professional surface tokens */
+    --surface-elevated: 100% 0 0;
+    --surface-base: 98% 0.005 220;
+    --surface-sunken: 96% 0.01 220;
+    --header-bg: 100% 0 0;
+    --section-bg: 98% 0.005 220;
+  }
 
-    .dark {
-        /* Dark mode - Emerald/Teal education theme */
-        --background: 0.12 0.02 160;
-        --foreground: 0.95 0.01 160;
-        --card: 0.16 0.02 160;
-        --card-foreground: 0.95 0.01 160;
-        --popover: 0.18 0.02 160;
-        --popover-foreground: 0.95 0.01 160;
-        --primary: 0.65 0.15 165;
-        --primary-foreground: 0.12 0.02 160;
-        --secondary: 0.20 0.02 160;
-        --secondary-foreground: 0.95 0.01 160;
-        --muted: 0.20 0.02 160;
-        --muted-foreground: 0.60 0.02 160;
-        --accent: 0.25 0.03 165;
-        --accent-foreground: 0.95 0.01 160;
-        --destructive: 0.60 0.22 25;
-        --destructive-foreground: 0.95 0.01 160;
-        --border: 0.25 0.02 160;
-        --input: 0.25 0.02 160;
-        --ring: 0.65 0.15 165;
-        --chart-1: 0.65 0.15 165;
-        --chart-2: 0.70 0.12 200;
-        --chart-3: 0.75 0.18 140;
-        --chart-4: 0.68 0.20 180;
-        --chart-5: 0.58 0.16 150;
-    }
+  .dark {
+    /* Professional Education Theme - Dark Mode */
+    --background: 16% 0.01 220;
+    --foreground: 96% 0.005 220;
+    --card: 20% 0.01 220;
+    --card-foreground: 96% 0.005 220;
+    --popover: 20% 0.01 220;
+    --popover-foreground: 96% 0.005 220;
+    --primary: 62% 0.18 250;
+    --primary-foreground: 16% 0.01 250;
+    --secondary: 24% 0.02 220;
+    --secondary-foreground: 96% 0.005 220;
+    --muted: 22% 0.01 220;
+    --muted-foreground: 62% 0.02 220;
+    --accent: 28% 0.04 200;
+    --accent-foreground: 96% 0.005 200;
+    --destructive: 55% 0.20 25;
+    --destructive-foreground: 98% 0.01 25;
+    --border: 28% 0.01 220;
+    --input: 28% 0.01 220;
+    --ring: 62% 0.18 250;
+    --success: 55% 0.15 145;
+    --success-foreground: 98% 0.01 145;
+    --warning: 65% 0.15 85;
+    --warning-foreground: 18% 0.01 85;
+    
+    /* Professional surface tokens - Dark */
+    --surface-elevated: 22% 0.01 220;
+    --surface-base: 16% 0.01 220;
+    --surface-sunken: 14% 0.01 220;
+    --header-bg: 20% 0.01 220;
+    --section-bg: 16% 0.01 220;
+  }
+}
 
-    * {
-        @apply border-border;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html,
+  body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+}
+
+@layer components {
+  /* Professional surface utilities with proper OKLCH usage */
+  .surface-elevated {
+    background: oklch(var(--surface-elevated));
+    border: 1px solid oklch(var(--border));
+    box-shadow: 0 1px 3px 0 oklch(0% 0 0 / 0.1), 0 1px 2px -1px oklch(0% 0 0 / 0.1);
+  }
+  
+  .surface-card {
+    background: oklch(var(--card));
+    border: 1px solid oklch(var(--border));
+    box-shadow: 0 1px 3px 0 oklch(0% 0 0 / 0.1), 0 1px 2px -1px oklch(0% 0 0 / 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  @media (prefers-reduced-motion: no-preference) {
+    .surface-card:hover {
+      box-shadow: 0 4px 6px -1px oklch(0% 0 0 / 0.1), 0 2px 4px -2px oklch(0% 0 0 / 0.1);
+    }
+  }
+  
+  /* Professional header - opaque with subtle shadow */
+  .professional-header {
+    background: oklch(var(--header-bg));
+    border-bottom: 1px solid oklch(var(--border));
+    box-shadow: 0 1px 2px 0 oklch(0% 0 0 / 0.05);
+  }
+  
+  /* Section backgrounds */
+  .section-bg {
+    background: oklch(var(--section-bg));
+  }
+  
+  .section-bg-alt {
+    background: oklch(var(--surface-sunken));
+  }
+  
+  /* Focus ring for accessibility */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+  
+  /* Smooth transitions with reduced motion support */
+  @media (prefers-reduced-motion: no-preference) {
+    .smooth-transition {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    body {
-        @apply bg-background text-foreground;
-        font-feature-settings: "rlig" 1, "calt" 1;
+    .smooth-scale:hover {
+      transform: scale(1.01);
     }
+    
+    .smooth-lift:hover {
+      transform: translateY(-1px);
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .smooth-transition,
+    .smooth-scale,
+    .smooth-lift {
+      transition: none;
+      transform: none;
+    }
+  }
 }
